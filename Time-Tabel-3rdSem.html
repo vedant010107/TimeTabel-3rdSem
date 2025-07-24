@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>University Timetable</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F0FCFC; /* Palette Lightest Teal */
+      color: #1A1A1A; /* Very dark gray for general text (default) */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .main-content-wrapper {
+      width: 100%;
+      text-align: center;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .table-container {
+      background-color: #ffffff; /* Pure white for table backgrounds */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid #e0e0e0; /* Light gray border */
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Specific overflow for the main timetable container */
+    #main-timetable-container {
+      max-width: 1500px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow-x: auto; /* Keep this for the main timetable */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      table-layout: fixed; /* Keep fixed for explicit column control */
+      border-collapse: collapse;
+      margin: 0 auto;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+
+    /* Main Timetable specific table min-width */
+    #main-timetable {
+        min-width: 700px; /* Ensures the main table is at least this wide before scrolling */
+    }
+
+    th, td {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e0e0e0; /* Light gray border for cells */
+      text-align: left;
+      color: #1A1A1A; /* Default dark text for all cells */
+      font-weight: 500; /* Slightly increased font-weight for general cell text */
+    }
+
+    /* Optimized widths for main timetable columns for minimal wrapping */
+    #main-timetable th:nth-child(1),
+    #main-timetable td:nth-child(1) { /* Time column */
+      width: 90px;
+      text-align: center;
+    }
+    #main-timetable th:nth-child(2),
+    #main-timetable td:nth-child(2) { /* Monday column */
+      width: 20%;
+    }
+    #main-timetable th:nth-child(3),
+    #main-timetable td:nth-child(3) { /* Tuesday column */
+      width: 20.5%;
+    }
+    #main-timetable th:nth-child(4),
+    #main-timetable td:nth-child(4) { /* Wednesday column */
+      width: 20%;
+    }
+    #main-timetable th:nth-child(5),
+    #main-timetable td:nth-child(5) { /* Thursday column */
+      width: 20.5%;
+    }
+    #main-timetable th:nth-child(6),
+    #main-timetable td:nth-child(6) { /* Friday column */
+      width: 21.5%;
+    }
+
+    .course-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: block;
+      color: #1A1A1A; /* Darker course name specifically */
+      font-weight: 700; /* Bold for course name */
+    }
+
+    th {
+      /* Headers remain Dark Gray/Teal */
+      background-color: #424E4B; /* Solid Dark Gray/Teal */
+      color: white; /* Explicitly ensure header text is white */
+      font-weight: 700; /* Bold */
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9; /* Off-white for even rows for slight contrast */
+    }
+
+    /* No tr:hover rule to eliminate hover color */
+
+    .time-cell {
+      font-weight: 700; /* Bold for time cell */
+      /* Removed color property from here so it inherits from th for header, or td for cells */
+    }
+
+    /* Specific rule for the TD elements with time-cell class */
+    td.time-cell {
+        color: #1A1A1A; /* Make the actual time entries dark for visibility */
+    }
+
+    .course-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 40px;
+    }
+
+    .room-no {
+      font-size: 0.75rem;
+      color: #333333; /* Darker gray for room numbers specifically */
+      white-space: nowrap;
+      font-weight: 500; /* Slightly increased font-weight for room numbers */
+    }
+
+    .no-class {
+      color: #555555; /* Darker "no class" specifically */
+      font-style: italic;
+      text-align: center;
+      font-weight: 500; /* Slightly increased font-weight for no class */
+    }
+
+    .print-button button {
+      /* Solid Green for the print button */
+      background-color: #34C759; /* Solid Green from your image */
+      color: white;
+      font-weight: 700;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease-in-out;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .print-button button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .half-width-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .half-width-container .table-container {
+      flex: 1 1 calc(50% - 0.75rem);
+      min-width: unset;
+    }
+
+    /* Instructor Details and Course Credits Tables */
+    #professor-table, #credits-table {
+        table-layout: fixed;
+        min-width: 350px;
+    }
+
+    /* Column widths for Instructor Details table */
+    #professor-table th:nth-child(1),
+    #professor-table td:nth-child(1) {
+      width: 25%;
+    }
+    #professor-table th:nth-child(2),
+    #professor-table td:nth-child(2) {
+      width: 45%;
+    }
+    #professor-table th:nth-child(3),
+    #professor-table td:nth-child(3) {
+      width: 30%;
+    }
+
+    /* Column widths for Course Credits table */
+    #credits-table th:nth-child(1),
+    #credits-table td:nth-child(1) {
+      width: 30%;
+    }
+    #credits-table th:nth-child(2),
+    #credits-table td:nth-child(2) {
+      width: 50%;
+    }
+    #credits-table th:nth-child(3),
+    #credits-table td:nth-child(3) {
+      width: 20%;
+    }
+
+
+    /* Mobile-specific adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+
+      .main-content-wrapper {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      .table-container {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        color: #424E4B; /* Heading color matches Dark Gray from palette */
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        color: #424E4B; /* Subheading color matches Dark Gray from palette */
+      }
+
+      table {
+        font-size: 0.8rem;
+      }
+
+      th, td {
+        padding: 0.4rem 0.6rem;
+        color: #1A1A1A; /* Darker text in mobile cells */
+        font-weight: 500; /* Consistent font-weight for mobile cells */
+      }
+
+      /* Ensure the half-width containers stack on mobile */
+      .half-width-container .table-container {
+        flex: 1 1 100%;
+        min-width: auto;
+      }
+
+      /* Enable horizontal scrolling for professor and credits tables on small screens */
+      .table-container .overflow-x-auto {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Adjust table min-widths for very small screens if needed, otherwise rely on overflow */
+      #professor-table, #credits-table {
+          min-width: 300px;
+      }
+    }
+
+    @media print {
+      .print-button {
+        display: none;
+      }
+      #main-timetable-container {
+        overflow-x: visible;
+      }
+      table {
+        table-layout: auto;
+        min-width: auto;
+      }
+      .half-width-container .table-container {
+        flex: none;
+        width: 48%;
+      }
+      .table-container .overflow-x-auto {
+        overflow-x: visible;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-content-wrapper">
+    <h1 class="text-4xl font-bold mb-10" style="color: #424E4B;">University Timetable</h1>
+
+    <div class="mb-6 print-button">
+      <button onclick="window.print()">Print Timetable (Save as PDF)</button>
+    </div>
+
+    <div class="table-container" id="main-timetable-container">
+      <h2 class="text-2xl font-semibold mb-4" style="color: #424E4B;">Weekly Schedule</h2>
+        <table id="main-timetable">
+          <thead>
+            <tr>
+              <th class="time-cell">Time</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+              <th>Friday</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="half-width-container">
+      <div class="table-container">
+        <h2 class="text-2xl font-semibold mb-4" style="color: #424E4B;">Instructor Details</h2>
+        <div class="overflow-x-auto">
+          <table id="professor-table">
+            <thead>
+              <tr>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Instructor(s)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h2 class="text-2xl font-semibold mb-4" style="color: #424E4B;">Course Credits</h2>
+        <div class="overflow-x-auto">
+          <table id="credits-table">
+            <thead>
+              <tr>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const csvDataLines = [
+      `Course Code,Course Name,Credits,Instructor 1,Instructor 2,Timings,Room no:`,
+      `AIT 203,Optimization,4,Aswin Kannan,,"TUE(2:00), THU(2:00)",P201`,
+      `AMS 203,Physics,3,Ashok,,"MON (2:00), WED(2:00)",P201`,
+      `AMS 203,Physics-Lab,1,Ashok B,Shiva Kumar Malapaka,"MON(3:45), WED(3:45), FRI(3:45)",A317`,
+      `CSE 201,Discrete Mathematics,4,Ashish Choudhury,,"MON (11:00), WED (11:00)",P201`,
+      `EGC 113,Signals & Systems,4,Jyotsna Bapat,,"TUE (11:00), THU (11:00), FRI (2:00)(TUT)",P201`,
+      `EGC 211,Programming II (C++),2,Ahana Pradhan,,"MON (9:15), WED (9:15)",P201`,
+      `EGC 211P,Programming II Lab (C++),0,Ahana Pradhan,,FRI(9:15),"R106, R107&R108"`
+    ];
+
+/*    ,
+      `EGC 212 ,Programming 2B (Java ),2,Vivek Yadav,,"MON (9:15), WED (9:15)",P201`,
+      `EGC 212 P,Programming 2B Lab(Java ),0,Vivek Yadav,,FRI(9:15),"R106, R107&R108"` */
+    const csvData = csvDataLines.join('\n');
+
+    async function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      const headers = lines[0].split(',').map(header => header.trim());
+      const data = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        const row = {};
+        headers.forEach((header, index) => {
+          let value = values[index] ? values[index].trim() : '';
+          if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1);
+          }
+          row[header] = value;
+        });
+        data.push(row);
+      }
+      return data;
+    }
+
+    function convertTimeToMinutes(timeStr) {
+      const [hourStr, minuteStr] = timeStr.split(':');
+      let hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr, 10);
+      if (hour === 12) {
+        hour = 12;
+      } else if (hour < 8) {
+        hour += 12;
+      }
+      return hour * 60 + minute;
+    }
+
+    function processTimings(data) {
+      const schedule = {};
+      const allTimes = new Set();
+
+      data.forEach(course => {
+        const timingsStr = course['Timings'];
+        const courseName = course['Course Name'];
+        const roomNo = course['Room no:'];
+
+        if (timingsStr) {
+          const individualTimings = timingsStr.split(',').map(t => t.trim());
+          individualTimings.forEach(timing => {
+            const match = timing.match(/([A-Z]+)\s*\((\d{1,2}:\d{2})\)/);
+            if (match) {
+              let day = match[1].toUpperCase();
+              const time = match[2];
+
+              const dayMap = {
+                'MON': 'Monday',
+                'TUE': 'Tuesday',
+                'WED': 'Wednesday',
+                'THU': 'Thursday',
+                'FRI': 'Friday',
+              };
+              day = dayMap[day] || day;
+
+              if (!schedule[day]) schedule[day] = {};
+              if (!schedule[day][time]) schedule[day][time] = [];
+              schedule[day][time].push({ courseName, roomNo });
+              allTimes.add(time);
+            }
+          });
+        }
+      });
+
+      const sortedTimes = Array.from(allTimes).sort((a, b) => convertTimeToMinutes(a) - convertTimeToMinutes(b));
+      return { schedule, sortedTimes };
+    }
+
+    function populateMainTimetable(schedule, sortedTimes) {
+      const tbody = document.querySelector('#main-timetable tbody');
+      tbody.innerHTML = '';
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+      sortedTimes.forEach(time => {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        timeCell.textContent = time;
+        timeCell.classList.add('time-cell');
+        row.appendChild(timeCell);
+
+        days.forEach(day => {
+          const cell = document.createElement('td');
+          if (schedule[day] && schedule[day][time]) {
+            schedule[day][time].forEach(item => {
+              const div = document.createElement('div');
+              div.classList.add('course-info');
+              div.innerHTML = `<span class="course-name">${item.courseName}</span><span class="room-no">${item.roomNo}</span>`;
+              cell.appendChild(div);
+            });
+          } else {
+            cell.textContent = '-';
+            cell.classList.add('no-class');
+          }
+          row.appendChild(cell);
+        });
+        tbody.appendChild(row);
+      });
+    }
+
+    function populateProfessorTable(data) {
+      const tbody = document.querySelector('#professor-table tbody');
+      tbody.innerHTML = '';
+      data.forEach(course => {
+        const row = document.createElement('tr');
+        const instructors = [course['Instructor 1'], course['Instructor 2']].filter(Boolean).join(' & ');
+        row.innerHTML = `
+          <td>${course['Course Code']}</td>
+          <td>${course['Course Name']}</td>
+          <td>${instructors || 'N/A'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function populateCreditsTable(data) {
+      const tbody = document.querySelector('#credits-table tbody');
+      tbody.innerHTML = '';
+      data.forEach(course => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${course['Course Code']}</td>
+          <td>${course['Course Name']}</td>
+          <td>${course['Credits'] || 'N/A'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadTimetable() {
+      try {
+        const parsedData = await parseCSV(csvData);
+        const { schedule, sortedTimes } = processTimings(parsedData);
+        populateMainTimetable(schedule, sortedTimes);
+        populateProfessorTable(parsedData);
+        populateCreditsTable(parsedData);
+      } catch (error) {
+        console.error('Error loading timetable:', error);
+      }
+    }
+
+    window.onload = loadTimetable;
+  </script>
+</body>
+</html>
