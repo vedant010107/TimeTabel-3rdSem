@@ -253,7 +253,7 @@
 
       th, td {
         padding: 0.4rem 0.6rem;
-        color: #1A1A1A; /* Darker text in mobile cells */
+        color: white; /* Darker text in mobile cells */
         font-weight: 500; /* Consistent font-weight for mobile cells */
       }
 
@@ -358,15 +358,20 @@
 
   <script>
     const csvDataLines = [
-      `Course Code,Course Name,Credits,Instructor 1,Instructor 2,Timings,Room no:`,
-      `AIT 203,Optimization,4,Aswin Kannan,,"TUE(2:00), THU(2:00)",P201`,
-      `AMS 203,Physics,3,Ashok,,"MON (2:00), WED(2:00)",P201`,
-      `AMS 203,Physics-Lab,1,Ashok B,Shiva Kumar Malapaka,"MON(3:45), WED(3:45), FRI(3:45)",A317`,
-      `CSE 201,Discrete Mathematics,4,Ashish Choudhury,,"MON (11:00), WED (11:00)",P201`,
-      `EGC 113,Signals & Systems,4,Jyotsna Bapat,,"TUE (11:00), THU (11:00), FRI (2:00)(TUT)",P201`,
-      `EGC 211,Programming II (C++),2,Ahana Pradhan,,"MON (9:15), WED (9:15)",P201`,
-      `EGC 211P,Programming II Lab (C++),0,Ahana Pradhan,,FRI(9:15),"R106, R107&R108"`
-    ];
+  `Course Code,Course Name,Credits,Instructor 1,Instructor 2,Timings,Room no:,Include`,
+  `AIT 203,Optimization,4,Aswin Kannan,,"TUE(2:00), THU(2:00)",P201,1`,
+  `AMS 203,Physics,3,Ashok,,"MON (2:00), WED(2:00)",P201,1`,
+  `AMS 203,Physics-Lab,1,Ashok B,Shiva Kumar Malapaka,"MON(3:45), WED(3:45)",A317,1`,
+  `CSE 201,Discrete Mathematics,4,Ashish Choudhury,,"MON (11:00), WED (11:00)",P201,1`,
+  `EGC 113,Signals & Systems,4,Jyotsna Bapat,,"TUE (11:00), THU (11:00)",P201,1`,
+  `EGC 211,Programming 2A (C++),2,Ahana Pradhan,,"TUE (9:15), THU (9:15)",P201,1`,
+  `EGC 211P,Programming 2A Lab (C++),0,Ahana Pradhan,,FRI(9:15),"R106,R107&R108",0`,
+  `CSE 201,Discrete Math TUT,4,Ashish Choudhury,,"FRI(11:00)",P201,0`,
+  `EGC 113,Signals & Systems TUT,4,Jyotsna Bapat,,"FRI (2:00)(TUT)",P201,0`
+];
+/*    ,
+      `EGC 212 ,Programming 2B (Java),2,Vivek Yadav,,"TUE (9:15), THU (9:15)",P201,1`,
+      `EGC 212P,Programming 2B Lab(Java),0,Vivek Yadav,,FRI(9:15),"R106,R107&R108",0` */
 
     const csvData = csvDataLines.join('\n');
 
@@ -508,33 +513,38 @@
     }
 
     function populateProfessorTable(data) {
-      const tbody = document.querySelector('#professor-table tbody');
-      tbody.innerHTML = '';
-      data.forEach(course => {
-        const row = document.createElement('tr');
-        const instructors = [course['Instructor 1'], course['Instructor 2']].filter(Boolean).join(' & ');
-        row.innerHTML = `
-          <td>${course['Course Code']}</td>
-          <td>${course['Course Name']}</td>
-          <td>${instructors || 'N/A'}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+  const tbody = document.querySelector('#professor-table tbody');
+  tbody.innerHTML = '';
+  data.forEach(course => {
+    if (course['Include'] !== '1') return; // Only include if Include == 1
+
+    const row = document.createElement('tr');
+    const instructors = [course['Instructor 1'], course['Instructor 2']].filter(Boolean).join(' & ');
+    row.innerHTML = `
+      <td>${course['Course Code']}</td>
+      <td>${course['Course Name']}</td>
+      <td>${instructors || 'N/A'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
 
     function populateCreditsTable(data) {
-      const tbody = document.querySelector('#credits-table tbody');
-      tbody.innerHTML = '';
-      data.forEach(course => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${course['Course Code']}</td>
-          <td>${course['Course Name']}</td>
-          <td>${course['Credits'] || 'N/A'}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+  const tbody = document.querySelector('#credits-table tbody');
+  tbody.innerHTML = '';
+  data.forEach(course => {
+    if (course['Include'] !== '1') return; // Only include if Include == 1
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${course['Course Code']}</td>
+      <td>${course['Course Name']}</td>
+      <td>${course['Credits'] || 'N/A'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
 
     async function loadTimetable() {
       try {
