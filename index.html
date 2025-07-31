@@ -63,7 +63,7 @@
       border: 1px solid #e0e0e0; /* Light gray border for cells */
       text-align: left;
       color: #1A1A1A; /* Default dark text for all cells */
-      font-weight: 500; /* Slightly increased font-weight for general cell text */
+      font-weight:500; /* Slightly increased font-weight for general cell text */
     }
 
     /* Optimized widths for main timetable columns for minimal wrapping */
@@ -253,10 +253,18 @@
 
       th, td {
         padding: 0.4rem 0.6rem;
-        color: white; /* Darker text in mobile cells */
+        color: #1A1A1A; /* Darker text in mobile cells */
         font-weight: 500; /* Consistent font-weight for mobile cells */
       }
 
+      th {
+      /* Headers remain Dark Gray/Teal */
+      background-color: #424E4B; /* Solid Dark Gray/Teal */
+      color: white; /* Explicitly ensure header text is white */
+      font-weight: 700; /* Bold */
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      }
       /* Ensure the half-width containers stack on mobile */
       .half-width-container .table-container {
         flex: 1 1 100%;
@@ -482,7 +490,7 @@
 
         // Get start time in minutes (24-hour internal for calculation)
         const startTimeInMinutes = convertTimeToMinutes(time);
-        
+
         // Format for display (12-hour without AM/PM)
         const formattedStartTime = formatMinutesToDisplayTime(startTimeInMinutes);
 
